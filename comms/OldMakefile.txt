@@ -1,0 +1,35 @@
+PORT?=8888
+SERVER?=localhost
+
+.PHONY: all clean test
+
+all: server client threads
+
+server: pingser.o
+	gcc -o server pingser.o
+
+pingser.o: pingser.c
+	gcc -c pingser.c
+
+client: pingcli.o
+	gcc -o client pingcli.o
+
+pingcli.o: pingcli.c
+	gcc -c pingcli.c
+
+threads: ping_sq.c saferq.c saferq.h
+	gcc -o threads ping_sq.c saferq.c -lpthread
+
+test: server client threads
+	@echo ""
+	@echo "Testing ping-pong client-server..."
+	@echo ""
+	./server $(PORT) &
+	./client $(SERVER) $(PORT)
+	@echo ""
+	@echo "Testing ping-pong threaded..."
+	@echo ""
+	./threads
+
+clean:
+	rm *.o server client threads
